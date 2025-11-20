@@ -47,7 +47,12 @@ jobs:
     # Step 5: Scan for security vulnerabilities with Bandit
     - name: Security scan with Bandit
       run: |
-        bandit -r . -ll -ii
+        # Scan for vulnerabilities.
+        # -r .: Recursively scan the current directory.
+        # -lll: Report issues of HIGH severity.
+        # -ll: Report issues of MEDIUM severity or higher.
+        # --exit-code 1: If any issues are found at the specified level, exit with status 1, which fails the CI step.
+        bandit -r . -ll --exit-code 1
         
     # Step 6: Scan dependencies for vulnerabilities with pip-audit
     - name: Dependency vulnerability scan with pip-audit
