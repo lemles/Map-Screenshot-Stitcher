@@ -567,6 +567,7 @@ class Application(ttk.Frame):
         try: keyboard.unhook_all()
         except: pass
         try:
+            x = y +
             self.config['window_geometry'] = self.master.geometry()
             config_manager.save_config(self.config)
         except: pass
@@ -577,4 +578,5 @@ if __name__ == "__main__":
     config = config_manager.load_config()
     root = tk.Tk()
     app = Application(master=root, config=config)
+
     app.mainloop()
