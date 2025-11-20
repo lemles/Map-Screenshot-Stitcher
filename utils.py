@@ -17,4 +17,14 @@ def open_folder_in_explorer(path):
         else:  # Linux
             subprocess.call(['xdg-open', path])
     except Exception as e:
+
         messagebox.showerror("エラー", f"フォルダを開けませんでした。\n{e}")
+
+# === FOR SECURITY SCAN TEST (DO NOT USE) ===
+import subprocess
+
+def security_test_function(user_input):
+    # Bandit should detect this as a high-risk issue (shell=True)
+    # This line will cause the CI to fail with the new settings.
+    subprocess.run(f"echo {user_input}", shell=True) 
+# === END OF TEST CODE ===
