@@ -48,7 +48,7 @@
 プログラミングの知識がない方でも、以下の形でプロジェクトに貢献できます。
 
 *   **口コミでの紹介とクレジット表記のお願い:**
-    もしAutoMapが便利だと感じたら、ぜひ **X や社内のチャット、ブログなどで「こんな便利なツールがあったよ！」と紹介**していただけると、開発の大きな励みになります。
+    もし"Map Screenshot Stitcher"が便利だと感じたら、ぜひ **X や社内のチャット、ブログなどで「こんな便利なツールがあったよ！」と紹介**していただけると、開発の大きな励みになります。
 
     また、作成した画像を公開する際には、**もし可能であれば**、画像の隅やキャプション、引用元などに、以下のようなクレジット表記を加えていただけると、プロジェクトの知名度向上に繋がり、大変嬉しく思います。これは**義務ではありません**が、コミュニティの成長のための素晴らしいご協力となります。
 
@@ -106,7 +106,7 @@
 
 
 ### Overview
-AutoMap is a tool that automatically scrolls and captures screenshots of web maps (or any large content) in a zigzag pattern and stitches them into a single seamless panoramic image using advanced alignment algorithms.
+"Map Screenshot Stitcher" is a tool that automatically scrolls and captures screenshots of web maps (or any large content) in a zigzag pattern and stitches them into a single seamless panoramic image using advanced alignment algorithms.
 
 ### Key Features
 *   **🖱️ Auto Capture**: Automatically scrolls and captures a specified region by emulating arrow key presses.
