@@ -16,7 +16,7 @@ GoogleMAP等、企業作製の地図は利用が制限されている場合が�
 ブラウザ上の地図などを自動でジグザグ移動しながらスクリーンショットを撮影し、独自のアルゴリズムで継ぎ目のない巨大な一枚絵に結合するツールです。
 
 ### ⚠️ 開発について (重要)
-**このツールのコードは、ChatGPT (AI) を使用して生成されました。**
+**このツールのコードは、AI を使用して生成されました。**
 私はプログラミングの知識がほとんどありません。アイデアと仕様をAIに伝え、生成されたコードを組み合わせて作成しました。
 そのため、コードの品質や保守性には問題がある可能性があります。
 
@@ -28,6 +28,20 @@ GoogleMAP等、企業作製の地図は利用が制限されている場合が�
 2.  **高度な結合**: テンプレートマッチングと特徴点マッチング(ORB)を併用し、ズレを自動補正。
 3.  **大規模対応**: メモリ不足を防ぐ設計で、巨大な画像の生成が可能。
 
+### 🛠️ 主な技術仕様 / Key Technical Specifications
+
+このツールは、以下の主要な技術とアルゴリズムで構築されています。これらの技術に詳しい方からのリファクタリングや改善提案を特に歓迎します！
+
+| カテゴリ                  | 主要技術・ライブラリ                                                               | 目的                                                           |
+| ------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **GUIフロントエンド**     | `Tkinter` (Python標準)                                                             | クロスプラットフォームで動作する軽量なGUIの実現                    |
+| **画像処理・最適化**      | `OpenCV`, `NumPy`, `SciPy`                                                         | 高度な画像処理と数学的最適化の実行                             |
+| &nbsp;&nbsp;↳ **マッチング** | ハイブリッド方式 (`テンプレートマッチング` + `ORB特徴点`)                         | 画像間の正確な相対位置の特定                                   |
+| &nbsp;&nbsp;↳ **最適化**  | グローバル最適化 (`疎行列最小二乗法`)                                              | 全体的な歪み（ドリフト誤差）を最小化する最適な配置の計算         |
+| &nbsp;&nbsp;↳ **メモリ管理** | メモリマップトファイル (`np.memmap`)                                               | RAM容量を超える巨大な画像のレンダリングを可能にする              |
+| **自動操作**              | `PyAutoGUI`, `Keyboard`                                                            | スクリーンショット撮影、キーボード操作のエミュレート、ホットキー監視 |
+| **CI/CD・テスト**         | `GitHub Actions` (`Flake8`, `Bandit`)                                              | コード品質の自動チェックとセキュリティスキャンの実行     
+
 ### 使い方
 同梱の `manual.html` をご覧ください。
 または、Python環境を構築し、以下で起動します。
@@ -35,9 +49,6 @@ GoogleMAP等、企業作製の地図は利用が制限されている場合が�
 
 pip install -r requirements.txt
 python main_app.py
-
-###License
-MIT License
 
 
 ## 🙏 貢献のお願い (Call for Contributions)
@@ -71,9 +82,10 @@ MIT License
 
 このプロジェクトは、AIと人間の協業がどのような可能性を秘めているかを探る実験的な試みでもあります。あなたのスキルと知識が、このツールをより良いものへと成長させる鍵となります。
 
+### License
+MIT License
 
 
-##🇺🇸 English
 
 ### Caution!
 The copyright of the map belongs to the mapmaker. Please use completely free maps or maps in accordance with the map's terms of use.
@@ -101,6 +113,20 @@ Advanced Stitching: Uses hybrid matching (Template Matching + ORB features) to a
 
 Large Scale: Designed to handle very large images without running out of memory (using memory mapping).
 
+### 🇺🇸 English Version
+
+This tool is built with the following key technologies and algorithms. We especially welcome refactoring and improvement suggestions from those familiar with these technologies!
+
+| Category                    | Key Technologies & Libraries                                                     | Purpose                                                        |
+| --------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **GUI Frontend**            | `Tkinter` (Python Standard Library)                                              | To create a lightweight, cross-platform GUI.                   |
+| **Image Processing & Opt.** | `OpenCV`, `NumPy`, `SciPy`                                                         | For advanced image processing and mathematical optimization.   |
+| &nbsp;&nbsp;↳ **Matching**  | Hybrid Method (`Template Matching` + `ORB Features`)                               | To accurately determine the relative positions between images. |
+| &nbsp;&nbsp;↳ **Optimization** | Global Optimization (`Sparse Least Squares`)                                     | To calculate the optimal layout that minimizes overall distortion (drift error). |
+| &nbsp;&nbsp;↳ **Memory Mgmt.** | Memory-mapped Files (`np.memmap`)                                                | To enable rendering of huge images that exceed RAM capacity.   |
+| **Automation**              | `PyAutoGUI`, `Keyboard`                                                            | For screen capturing, emulating keyboard inputs, and monitoring hotkeys. |
+| **CI/CD & Testing**         | `GitHub Actions` (`Flake8`, `Bandit`)                                              | To automate code quality checks and security scanning.         |
+
 ###Usage
 
 Please verify requirements.txt and run:
@@ -113,8 +139,6 @@ expand_less
 pip install -r requirements.txt
 python main_app.py
 
-###License
-MIT License
 
 **This project needs your help.**
 
@@ -142,3 +166,7 @@ Any contribution, no matter how small, is sincerely welcome.
     To prevent unexpected issues, please help add unit tests and integration tests.
 
 This project is also an experiment to explore the potential of collaboration between AI and humans. Your skills and knowledge are the key to evolving this tool into something better.
+
+
+### License
+MIT License
