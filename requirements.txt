@@ -1,0 +1,21 @@
+#GUI & System
+tk
+pyautogui
+keyboard
+
+#Image Processing
+numpy
+
+#GUI無しの軽量版OpenCV
+opencv-python-headless
+pillow
+
+#Scientific & Math for Stitching
+scipy
+tqdm
+psutil
+matplotlib
+
+# Packaging (For creating exe)
+auto-py-to-exe
+pyinstaller

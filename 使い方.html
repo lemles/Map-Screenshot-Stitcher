@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoMap - 使い方マニュアル</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --accent-color: #e7f1ff;
+            --text-color: #333;
+            --bg-color: #f9f9f9;
+            --border-color: #ddd;
+            --tech-color: #2c3e50;
+        }
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        h2 {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 18px;
+            margin-top: 40px;
+        }
+        h3 {
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+            margin-top: 25px;
+            font-size: 16px;
+            color: #444;
+        }
+        /* 技術評価点セクション用のスタイル */
+        h2.tech-header {
+            background-color: var(--tech-color);
+        }
+        .tech-block {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #fff;
+        }
+        .tech-title {
+            font-weight: bold;
+            color: var(--tech-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .tech-badge {
+            background-color: var(--tech-color);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-right: 8px;
+            text-transform: uppercase;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        ul, ol {
+            margin-bottom: 20px;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .key {
+            display: inline-block;
+            padding: 2px 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f7f7f7;
+            font-family: monospace;
+            font-weight: bold;
+            box-shadow: 0 1px 0 #ccc;
+            font-size: 0.9em;
+        }
+        .step-block {
+            background-color: var(--accent-color);
+            border: 1px solid #b6d4fe;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .step-number {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+        .warning {
+            background-color: #fff5f5;
+            border-left: 4px solid #dc3545;
+            padding: 10px 15px;
+            color: #a71d2a;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>AutoMap ユーザーマニュアル</h1>
+        <div class="subtitle">Web地図自動スクロール撮影＆高精度パノラマ結合ツール</div>
+    </header>
+
+    <section id="overview">
+        <h2>1. はじめに</h2>
+        <p><strong>AutoMap</strong> は、ブラウザ上の地図や巨大な画像を、自動でスクロールしながらスクリーンショット撮影し、それらを一枚の巨大な画像に結合するツールです。</p>
+        <p>手動で何十枚も撮影して貼り合わせる手間を解消し、独自の補正アルゴリズムにより継ぎ目の目立たない高品質な結合画像を作成します。3000枚の画像結合でも10分程度で完了します。</p>
+    </section>
+
+    <section id="step1-capture">
+        <h2>2. 自動撮影の手順 (AutoMap)</h2>
+        <p>まずは「撮影（Shot）」タブを使用して、素材となる画像を収集します。</p>
+
+        <div class="step-block">
+            <div class="step-number">Step 1. 準備</div>
+            <p>保存先フォルダを指定し、撮影したい画面上の範囲を指定します。</p>
+            <ol>
+                <li><strong>保存先 (SaveTo):</strong> 「フォルダ選択」ボタンを押し、画像の保存先を指定します。</li>
+                <li><strong>ブラウザの配置:</strong> ブラウザ（地図など）をデスクトップの右側に配置してください。</li>
+                <li><strong>範囲指定 (SS Region):</strong> 「スクリーンショット範囲指定」ボタンを押します。画面が薄暗くなるので、マウスをドラッグして<strong>「地図の表示部分のみ」</strong>を赤い枠で囲ってください。<br>
+                <small>※ブラウザのスクロールバーやメニューを含めないようにすると、結合精度が上がります。</small></li>
+            </ol>
+        </div>
+
+        <div class="step-block">
+            <div class="step-number">Step 2. 設定</div>
+            <p>撮影する枚数や移動量を設定します。</p>
+            <table>
+                <tr>
+                    <th>横枚数 (Cols)</th>
+                    <td>横方向に何回移動するか（列数）を指定します。</td>
+                </tr>
+                <tr>
+                    <th>縦枚数 (Rows)</th>
+                    <td>縦方向に何回移動するか（行数）を指定します。</td>
+                </tr>
+                <tr>
+                    <th>右移動 (Right)</th>
+                    <td>1回の移動につき、矢印キー<span class="key">→</span>を押す回数です。</td>
+                </tr>
+                <tr>
+                    <th>下移動 (Down)</th>
+                    <td>改行時、矢印キー<span class="key">↓</span>を押す回数です。</td>
+                </tr>
+                <tr>
+                    <th>間隔 (Delay)</th>
+                    <td>移動後、地図の読み込みを待つ時間（秒）です。回線が遅い場合は長めに設定してください。</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="step-block">
+            <div class="step-number">Step 3. 実行</div>
+            <ol>
+                <li><strong>「▶ 開始」</strong>ボタンを押します。</li>
+                <li><strong><span class="highlight" style="color:red;">重要: 開始ボタンを押した後、5秒以内にブラウザの地図部分を1回クリックしてください。</span></strong><br>
+                （キー操作をブラウザに送信するために、ブラウザをアクティブにする必要があります）</li>
+                <li>自動撮影が始まります。マウスやキーボードに触れずに待機してください。</li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <strong>緊急停止方法:</strong><br>
+            動作を中断したい場合は、キーボードの <span class="key">ESC</span> キーを押すか、ツールの「■ 停止」ボタンを押してください。
+        </div>
+    </section>
+
+    <section id="step2-stitch">
+        <h2>3. 画像の結合 (Stitcher)</h2>
+        <p>撮影が終わったら、「結合 (Join)」タブに切り替え、「ツールを開く」ボタンを押して結合ツールを起動します。</p>
+
+        <div class="step-block">
+            <div class="step-number">Step 1. 入力・出力設定</div>
+            <ul>
+                <li><strong>入力フォルダ:</strong> 先ほど撮影した画像があるフォルダを選択します（通常は自動で入力されています）。</li>
+                <li><strong>出力ファイル:</strong> 結合後の画像の保存名です。通常は <code>フォルダ名_stitched.png</code> になります。</li>
+            </ul>
+        </div>
+
+        <div class="step-block">
+            <div class="step-number">Step 2. オプション設定</div>
+            <ul>
+                <li><strong>部分結合 (Enable Partial Stitching):</strong> 特定の行・列だけをテスト結合したい場合にチェックを入れ、範囲を指定します。</li>
+                <li><strong>信頼度閾値 (Score Thresh):</strong> マッチングの厳しさです（デフォルト: 0.75）。うまく繋がらない場合は数値を下げてみてください。</li>
+                <li><strong>重なり(%) (Overlap):</strong> 撮影時の画像の重なり具合です。<br>
+                <span class="highlight">※デフォルトは横60%、縦40%です。撮影時の移動設定に合わせて調整してください。</span><br>
+		<span class="highlight">※設定値は、目測より少ない値で設定した方が成功します。</span></li>
+            </ul>
+        </div>
+
+        <div class="step-block">
+            <div class="step-number">Step 3. 実行</div>
+            <p>「結合開始」ボタンを押します。以下の順序で処理が自動進行します。</p>
+            <ol>
+                <li><strong>検証:</strong> 画像ファイル（Rxx_Cxx.png）の不足がないかチェックします。</li>
+                <li><strong>マッチング:</strong> 全画像の隣接関係を解析します。</li>
+                <li><strong>最適化:</strong> 画像全体の歪みを補正する計算を行います。</li>
+                <li><strong>レンダリング:</strong> 結果を巨大な一枚絵として出力します。</li>
+            </ol>
+        </div>
+        
+        <p>※「低解像度プレビュー (Generate Low-Res Preview)」にチェックを入れると、本番処理の前に縮小版を作成して繋ぎ目を確認できます。</p>
+    </section>
+
+    <section id="tech-specs">
+        <h2 class="tech-header">4. 技術仕様・評価点</h2>
+        <p>AutoMap は、単純な画像連結ツールとは異なり、高度な画像処理技術を用いて「ズレのない」「破綻しない」結合を実現しています。</p>
+
+        <div class="tech-block">
+            <div class="tech-title"><span class="tech-badge">Algorithm</span> ハイブリッド・マッチングエンジン</div>
+            <p>画像の連結位置を決定する際、以下の2つのアルゴリズムを自動で使い分けます。</p>
+            <ul>
+                <li><strong>テンプレートマッチング (Template Matching):</strong> 地図やCAD図面のような、平行移動が支配的な画像に対してピクセル単位の高精度な位置合わせを行います。</li>
+                <li><strong>特徴点マッチング (ORB + RANSAC):</strong> 上記で信頼度が低い場合、画像の特徴点（角や模様）を検出し、統計的推測(RANSAC)を用いて最適な変換行列を算出します。</li>
+            </ul>
+        </div>
+
+        <div class="tech-block">
+            <div class="tech-title"><span class="tech-badge">Optimization</span> グローバル最適化 (Global Bundle Adjustment)</div>
+            <p>画像を1枚ずつ順番に繋ぐと、端に行くほど誤差が蓄積し、全体が歪んでしまいます（ドリフト現象）。<br>
+            本ツールは、全画像間の相対位置関係を数千の連立方程式として定式化し、<strong>疎行列最小二乗法 (Sparse Least Squares)</strong> を用いて一括で解くことで、全体として最も歪みの少ない配置を算出します。</p>
+        </div>
+
+        <div class="tech-block">
+            <div class="tech-title"><span class="tech-badge">Performance</span> 大規模画像対応のメモリ管理</div>
+            <p>数万ピクセル四方を超えるような巨大画像の生成において、物理メモリ(RAM)の制限は大きな課題です。<br>
+            AutoMap は <strong>メモリマップトファイル (Memory-mapped file)</strong> 技術を採用しており、ディスク領域を仮想的なメモリとして扱うことで、搭載RAM容量を遥かに超える超高解像度画像の結合・出力を可能にしています。</p>
+        </div>
+
+        <div class="tech-block">
+            <div class="tech-title"><span class="tech-badge">Reliability</span> 堅牢な運用設計</div>
+            <ul>
+                <li><strong>スリープ抑止機能:</strong> 長時間の撮影中にPCがスリープするのを防ぎます。</li>
+                <li><strong>読み込み検知:</strong> 画面がグレーアウト（ロード中）している場合、撮影を一時待機してリトライするロジックを搭載しています。</li>
+                <li><strong>日本語パス対応:</strong> マルチバイト文字を含むフォルダパスでの読み書きに完全対応しています。</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="faq">
+        <h2>5. よくある質問とトラブルシューティング</h2>
+        <h3>Q. 撮影時、画面がスクロールしません。</h3>
+        <p>A. 開始ボタンを押した後、5秒のカウントダウン中に<strong>ブラウザをクリックしてアクティブにしましたか？</strong> キー操作はアクティブなウィンドウに対して送信されます。</p>
+
+        <h3>Q. 結合した画像がズレています。</h3>
+        <p>A. 撮影範囲指定（赤い枠）の中に、ブラウザのスクロールバーなどの<strong>動かないパーツ</strong>が含まれていると、誤った位置で結合されやすくなります。赤い枠は地図の中だけに収まるように設定してください。</p>
+    </section>
+
+    <div class="footer">
+        <p>&copy; 2023 AutoMap Project</p>
+    </div>
+</div>
+
+</body>
+</html>
