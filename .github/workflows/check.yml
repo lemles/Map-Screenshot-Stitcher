@@ -7,55 +7,53 @@
 
 name: Python CI & Security Scan
 
-# Trigger this workflow on every pull request to the 'main' branch
 on:
   pull_request:
     branches: [ main ]
 
 jobs:
   build-and-test:
-    # Run on the latest version of Ubuntu
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Check out the repository code
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Step 2: Set up a specific version of Python
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10' # Specify a Python version
+        python-version: '3.10'
 
-    # Step 3: Install necessary Python packages for checking
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 bandit pip-audit
-        # Install the project's own dependencies from requirements.txt
+        pip install flake8 bandit pip-audit jq
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    # Step 4: Lint code with Flake8 (checks for style errors)
     - name: Lint with Flake8
       run: |
-        # Stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    # Step 5: Scan for security vulnerabilities with Bandit
     - name: Security scan with Bandit
       run: |
-        pip install jq
-        # Scan for vulnerabilities.
-        # -r .: Recursively scan the current directory.
-        # -lll: Report issues of HIGH severity.
-        # -ll: Report issues of MEDIUM severity or higher.
-        # --exit-code 1: If any issues are found at the specified level, exit with status 1, which fails the CI step.
-        bandit -r . -ll --exit-code 1
+        # Step 1: Run Bandit and save the report as a JSON file.
+        bandit -r . -f json -o bandit-report.json
         
-    # Step 6: Scan dependencies for vulnerabilities with pip-audit
+        # Step 2: Print the report to the logs for easy viewing.
+        echo "--- Bandit Scan Report ---"
+        cat bandit-report.json
+        echo "--------------------------"
+        
+        # Step 3: Use jq to check if there are any HIGH or MEDIUM severity issues.
+        # If jq finds any, it will exit with code 0. The 'if' condition will be true.
+        if jq -e '.results | map(select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM")) | length > 0' bandit-report.json; then
+          echo "::error::Bandit found high or medium severity security issues. Failing the build."
+          exit 1
+        else
+          echo "Bandit scan passed. No high or medium severity issues found."
+        fi
+        
     - name: Dependency vulnerability scan with pip-audit
       run: |
         pip-audit
