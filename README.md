@@ -42,7 +42,7 @@
 **このプロジェクトは、皆さんの様々な形での助けを必要としています。**
 
 #### ⚠️ 開発の背景
-このツールはAI（ChatGPT）との対話を通じて生まれました。私自身はプログラミングの専門家ではないため、コードの改善にはコミュニティの力が必要です。このプロジェクトは、AIと人間の協業がどのような可能性を秘めているかを探る実験的な試みでもあります。
+このツールはAIとの対話を通じて生まれました。私自身はプログラミングの専門家ではないため、コードの改善にはコミュニティの力が必要です。このプロジェクトは、AIと人間の協業がどのような可能性を秘めているかを探る実験的な試みでもあります。
 
 #### ❤️ ツールを広める・応援する
 プログラミングの知識がない方でも、以下の形でプロジェクトに貢献できます。
@@ -318,7 +318,7 @@ For more detailed instructions, please refer to the `manual.html` file included 
 **This project needs your help in many ways.**
 
 #### ⚠️ Background
-This tool was created through a dialogue with an AI (ChatGPT). As I am not a programming expert, the power of the community is essential for improving the code. This project is also an experiment to explore the potential of collaboration between AI and humans.
+This tool was created through a dialogue with an AI. As I am not a programming expert, the power of the community is essential for improving the code. This project is also an experiment to explore the potential of collaboration between AI and humans.
 
 #### ❤️ Spread the Word & Support Us
 Even if you don't have programming knowledge, you can contribute to the project in the following ways:
