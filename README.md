@@ -2,226 +2,372 @@
 
 **Web Map Auto-Scroller & Panorama Stitcher / Web地図自動スクロール撮影＆パノラマ結合ツール**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<!-- Badges -->
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+
+<!-- Demo GIF -
+**重要:** `demo.gif` という名前のGIFファイルをリポジトリにアップロードし、以下のURLの `あなたのユーザー名` の部分を実際のユーザー名に書き換えてください。
+-->
+![AutoMap Demo](https://github.com/あなたのユーザー名/AutoMap/blob/main/demo.gif?raw=true)
+
+---
 
 ## 🇯🇵 日本語 (Japanese)
 
-### 注意！
-地図の著作権は地図制作者にあります。完全フリーの地図や、地図の利用規約に基づいて使用してください。
-公的機関が発行している地図だと、利用可能の場合があります。
-GoogleMAP等、企業作製の地図は利用が制限されている場合があります。ご注意ください。
-
 ### 概要
-ブラウザ上の地図などを自動でジグザグ移動しながらスクリーンショットを撮影し、独自のアルゴリズムで継ぎ目のない巨大な一枚絵に結合するツールです。
+ブラウザ上の地図や巨大なコンテンツを自動でジグザグ移動しながらスクリーンショット撮影し、独自のアルゴリズムで継ぎ目のない一枚の巨大な画像に結合するツールです。
 
-### ⚠️ 開発について (重要)
-**このツールのコードは、AI を使用して生成されました。**
-私はプログラミングの知識がほとんどありません。アイデアと仕様をAIに伝え、生成されたコードを組み合わせて作成しました。
-そのため、コードの品質や保守性には問題がある可能性があります。
-
-**開発を手伝ってくれる方を募集しています！**
-リファクタリング、バグ修正、機能追加など、プルリクエスト(Pull Request)を歓迎します。
-
-### 機能
-1.  **自動撮影**: 範囲を指定し、矢印キー操作で地図を自動スクロール撮影。
-2.  **高度な結合**: テンプレートマッチングと特徴点マッチング(ORB)を併用し、ズレを自動補正。
-3.  **大規模対応**: メモリ不足を防ぐ設計で、巨大な画像の生成が可能。
-
-### 🛠️ 主な技術仕様 / Key Technical Specifications
-
-このツールは、以下の主要な技術とアルゴリズムで構築されています。これらの技術に詳しい方からのリファクタリングや改善提案を特に歓迎します！
-
-| カテゴリ                  | 主要技術・ライブラリ                                                               | 目的                                                           |
-| ------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| **GUIフロントエンド**     | `Tkinter` (Python標準)                                                             | クロスプラットフォームで動作する軽量なGUIの実現                    |
-| **画像処理・最適化**      | `OpenCV`, `NumPy`, `SciPy`                                                         | 高度な画像処理と数学的最適化の実行                             |
-| &nbsp;&nbsp;↳ **マッチング** | ハイブリッド方式 (`テンプレートマッチング` + `ORB特徴点`)                         | 画像間の正確な相対位置の特定                                   |
-| &nbsp;&nbsp;↳ **最適化**  | グローバル最適化 (`疎行列最小二乗法`)                                              | 全体的な歪み（ドリフト誤差）を最小化する最適な配置の計算         |
-| &nbsp;&nbsp;↳ **メモリ管理** | メモリマップトファイル (`np.memmap`)                                               | RAM容量を超える巨大な画像のレンダリングを可能にする              |
-| **自動操作**              | `PyAutoGUI`, `Keyboard`                                                            | スクリーンショット撮影、キーボード操作のエミュレート、ホットキー監視 |
-| **CI/CD・テスト**         | `GitHub Actions` (`Flake8`, `Bandit`)                                              | コード品質の自動チェックとセキュリティスキャンの実行     
-
-
-### 処理フローの概要 / Processing Flow Overview
-
-このツールは、大きく分けて2つの独立したアプリケーション（撮影アプリと結合アプリ）で構成されており、それぞれが明確な役割を担っています。
-
-1.  **撮影アプリ (`main_app.py`)**
-    *   **役割:** ユーザーインターフェースの提供と、ブラウザの自動操作による画像収集。
-    *   **起動:** `python main_app.py` で直接実行します。
-    *   **GUI構築:** `Tkinter` を使用してメインウィンドウ（撮影タブ、結合タブ）を構築します。ウィンドウの位置や設定値は `config.json` に保存されます (`config_manager.py`)。
-    *   **自動撮影プロセス:**
-        1.  ユーザーが「▶ 開始」ボタンを押すと、GUIがフリーズしないように別スレッド (`threading`) で自動化ロジックが開始されます。
-        2.  `pyautogui` ライブラリを使用して、設定された回数だけ矢印キーをエミュレートし、ブラウザ画面をスクロールさせます。
-        3.  各位置で指定範囲のスクリーンショットを撮影し、`Rxx_Cxx.png` という命名規則で指定フォルダに保存します。
-        4.  Windows環境では、撮影中にPCがスリープするのを防ぐため、`ctypes` を介してOSの省電力機能を一時的に抑制します。
-
-2.  **結合アプリ (`stitcher_app.py` → `advanced_stitcher.py`)**
-    *   **役割:** 撮影された多数の画像を、一枚の巨大なパノラマ画像に結合する。
-    *   **起動:** 撮影アプリの「結合」タブからモーダルウィンドウとして起動されます。
-    *   **プロセス分離:**
-        1.  `stitcher_app.py` は結合設定を行うための `Tkinter` GUIです。
-        2.  「結合開始」が押されると、非常に重い画像処理を `multiprocessing` を使用して完全に別のプロセスで実行し、GUIの応答性を維持します。
-    *   **コアエンジン (`advanced_stitcher.py`):**
-        1.  **ペアワイズマッチング:** `OpenCV` を利用し、隣接する全画像ペアの相対的なズレ（オフセット）を計算します。テンプレートマッチングと特徴点マッチング（ORB）を併用するハイブリッド方式です。
-        2.  **グローバル最適化:** 全てのズレ情報を元に、`scipy.sparse.linalg.lsqr` を用いて、全体の歪みが最小になるような各画像の最終座標を一括で計算します。これにより、誤差の蓄積（ドリフト現象）を防ぎます。
-        3.  **レンダリング:** `numpy.memmap` を使ってディスク上に巨大な仮想キャンバスを作成します。これにより、PCの搭載RAM容量を大幅に超えるような巨大な画像でも、メモリ不足に陥ることなく最終的な一枚絵を生成できます。
-
+### 主な機能
+*   **🖱️ 自動撮影**: 範囲を指定し、矢印キー操作をエミュレートして地図などを自動スクロール撮影。
+*   **✨ 高度な結合**: テンプレートマッチングと特徴点マッチング(ORB)を併用し、ズレを自動補正。
+*   **💾 大規模対応**: ディスクキャッシュ(Memory-mapping)により、メモリ不足を防ぎ、巨大な画像の生成が可能。
 
 ### 使い方
-同梱の `manual.html` をご覧ください。
-または、Python環境を構築し、以下で起動します。
+1.  Python環境を構築します。
+2.  以下のコマンドを実行して、必要なライブラリをインストールします。
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  以下のコマンドでアプリケーションを起動します。
+    ```bash
+    python main_app.py
+    ```
+より詳細な使い方は、同梱の `manual.html` をご覧ください。
 
+---
 
-pip install -r requirements.txt
+### 🙏 貢献のお願い
 
-python main_app.py
+**このプロジェクトは、皆さんの様々な形での助けを必要としています。**
 
+#### ⚠️ 開発の背景
+このツールはAI（ChatGPT）との対話を通じて生まれました。私自身はプログラミングの専門家ではないため、コードの改善にはコミュニティの力が必要です。このプロジェクトは、AIと人間の協業がどのような可能性を秘めているかを探る実験的な試みでもあります。
 
-## 🙏 貢献のお願い (Call for Contributions)
+#### ❤️ ツールを広める・応援する
+プログラミングの知識がない方でも、以下の形でプロジェクトに貢献できます。
 
-### 🇯🇵 日本語 (Japanese)
+*   **口コミでの紹介とクレジット表記のお願い:**
+    もしAutoMapが便利だと感じたら、ぜひ **X (旧Twitter) や社内のチャット、ブログなどで「こんな便利なツールがあったよ！」と紹介**していただけると、開発の大きな励みになります。
 
-**このプロジェクトは、皆さんの助けを必要としています。**
+    また、作成した画像を公開する際には、**もし可能であれば**、画像の隅やキャプション、引用元などに、以下のようなクレジット表記を加えていただけると、プロジェクトの知名度向上に繋がり、大変嬉しく思います。これは**義務ではありません**が、コミュニティの成長のための素晴らしいご協力となります。
 
-前述の通り、このツールはAI（ChatGPT）との対話を通じて生まれました。私自身はプログラミングの専門家ではないため、生成されたコードの詳細なレビューや改善が難しい状況です。
+    > **クレジット表記の例:**
+    > *   `地図画像: AutoMap を使用して作成 (https://github.com/あなたのユーザー名/AutoMap)`
+    > *   `Image created with AutoMap (GitHub Link)`
 
-しかし、このツールのアイデアと機能性には大きな可能性があると信じています。もしあなたがプログラミングの知識をお持ちで、このプロジェクトに少しでも興味を持っていただけたなら、ぜひ力を貸していただけないでしょうか。
+#### 💻 コードで貢献する
+もちろん、開発者からの貢献はいつでも大歓迎です。どんな小さな貢献でも、心から歓迎します。
 
-どのような小さな貢献でも、心から歓迎します。
+*   **コードのリファクタリング:** AIが生成したコードを、よりクリーンで効率的なものに改善する手助けをお願いします。
+*   **バグの発見と修正:** 不具合を見つけたら、Issueでの報告や、プルリクエストを送っていただけると大変助かります。
+*   **機能のアイデアと実装:** 「こんな機能があったらもっと便利になる」というアイデアを、ぜひIssueで提案してください。
+*   **ドキュメントの改善:** `README`や使い方マニュアルの誤字脱字の修正など、文章の改善も歓迎します。
+*   **テストの追加:** 予期せぬ不具合を防ぐため、ユニットテストや結合テストを追加する手助けをお願いします。
 
-#### どんな助けが必要ですか？
+---
 
-*   **コードのリファクタリング:**
-    AIが生成したコードには、冗長な部分や非効率的な箇所があるかもしれません。よりクリーンで、読みやすく、効率的なコードに改善する手助けをお願いします。
+### 🛠️ 技術仕様
+このツールは、以下の主要な技術とアルゴリズムで構築されています。詳細については、`docs/`フォルダ内のアーキテクチャドキュメントをご覧ください。
 
-*   **バグの発見と修正:**
-    ツールを使ってみて、おかしな挙動やエラーを見つけたら、ぜひIssueで報告してください。もし修正方法がわかるなら、プルリクエストを送っていただけると大変助かります。
+| カテゴリ                  | 主要技術・ライブラリ                                      | 目的                                                           |
+| ------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+| **GUIフロントエンド**     | `Tkinter`                                                 | クロスプラットフォームで動作する軽量なGUIの実現                    |
+| **画像処理・最適化**      | `OpenCV`, `NumPy`, `SciPy`                                | 高度な画像処理と数学的最適化の実行                             |
+| &nbsp;&nbsp;↳ **マッチング** | ハイブリッド方式 (`テンプレートマッチング` + `ORB特徴点`) | 画像間の正確な相対位置の特定                                   |
+| &nbsp;&nbsp;↳ **最適化**  | グローバル最適化 (`疎行列最小二乗法`)                     | 全体的な歪み（ドリフト誤差）を最小化する最適な配置の計算         |
+| **自動操作**              | `PyAutoGUI`, `Keyboard`                                   | スクリーンショット撮影、キーボード操作のエミュレート、ホットキー監視 |
+| **CI/CD・テスト**         | `GitHub Actions` (`Flake8`, `Bandit`)                     | コード品質の自動チェックとセキュリティスキャンの実行             |
 
-*   **機能のアイデアと実装:**
-    「こんな機能があったらもっと便利になる」というアイデアはありませんか？Issueで提案していただくだけでも貴重な貢献です。
+---
 
-*   **ドキュメントの改善:**
-    `README`や使い方マニュアル（`manual.html`）の誤字脱字の修正、より分かりやすい表現への変更など、文章の改善も歓迎します。
+### 📜 ライセンス (License)
 
-*   **テストの追加:**
-    予期せぬ不具合を防ぐため、ユニットテストや結合テストを追加する手助けをお願いします。
+このプロジェクトは **AGPLv3** ライセンスの下で公開されています。
+このライセンスは**ソースコードの利用**に関するものであり、**本ソフトウェアを使用して生成された成果物（画像ファイルなど）の利用を制限するものではありません。**
 
-このプロジェクトは、AIと人間の協業がどのような可能性を秘めているかを探る実験的な試みでもあります。あなたのスキルと知識が、このツールをより良いものへと成長させる鍵となります。
+#### 【簡単なまとめ】
+*   ✅ **ソフトウェアの利用:** このソフトウェア自体は、個人・商用を問わず**完全に無料**で利用できます。
+*   ✅ **成果物の利用:** 本ソフトウェアを使って作成した画像（結合後の地図など）は、**自由に利用できます（商用利用も可）。**
+*   ❌ **ソースコードの商用組み込み:** このソフトウェアのソースコード（またはその一部）を、**あなたが開発した別のソフトウェアに組み込んで配布・販売する場合**は、あなたのソフトウェア全体のソースコードもAGPLv3で公開する必要があります。
 
-### License
-MIT License
+もし、AGPLのソースコードに関する制約を受けずに、あなたのクローズドソースな商用製品でAutoMapの技術を利用したい場合は、別途**商用ライセンス**をご用意しています。ご希望の場合は、作者までお問い合わせください。
 
+#### ❗ 地図の著作権に関する注意
+地図の著作権は各地図の制作者にあります。本ソフトウェアを使用する際は、対象となる地図の利用規約を必ず確認し、それに従ってください。Googleマップ等、企業の地図は利用が制限されている場合があります。
 
+<br>
 
-### Caution!
-The copyright of the map belongs to the mapmaker. Please use completely free maps or maps in accordance with the map's terms of use.
-Maps issued by public institutions may be usable.
-Maps created by companies, such as Google Maps, may have usage restrictions. Please be careful.
+---
+---
 
-###Overview
+<br>
 
-AutoMap is a tool that automatically scrolls and captures screenshots of web maps (or any large content) and stitches them into a single seamless panorama image using advanced alignment algorithms.
+## 🇺🇸 English
 
-###⚠️ About Development (Important)
+### Overview
+AutoMap is a tool that automatically scrolls and captures screenshots of web maps (or any large content) in a zigzag pattern and stitches them into a single seamless panoramic image using advanced alignment algorithms.
 
-The code for this tool was entirely generated using ChatGPT (AI).
-I have very little knowledge of programming. I provided the ideas and specifications to the AI, and assembled the generated code.
-Therefore, code quality and maintainability might not be optimal.
+### Key Features
+*   **🖱️ Auto Capture**: Automatically scrolls and captures a specified region by emulating arrow key presses.
+*   **✨ Advanced Stitching**: Precisely aligns images using a hybrid method of Template Matching and ORB features.
+*   **💾 Large Scale Support**: Designed to handle very large images without running out of memory by using memory-mapping.
 
-Contributions are welcome!
-I am looking for developers who can help with refactoring, bug fixing, and feature additions. Pull Requests are highly appreciated.
+### Usage
+1.  Set up a Python environment.
+2.  Install the required libraries by running the following command:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  Launch the application with the following command:
+    ```bash
+    python main_app.py
+    ```
+For more detailed instructions, please refer to the `manual.html` file included in this repository.
 
-###Features
+---
 
-Auto Capture: Automatically scrolls and captures the specified region using simulated arrow key presses.
+### 🙏 Call for Contributions
 
-Advanced Stitching: Uses hybrid matching (Template Matching + ORB features) to align images precisely.
+**This project needs your help in many ways.**
 
-Large Scale: Designed to handle very large images without running out of memory (using memory mapping).
+#### ⚠️ Background
+This tool was created through a dialogue with an AI (ChatGPT). As I am not a programming expert, the power of the community is essential for improving the code. This project is also an experiment to explore the potential of collaboration between AI and humans.
 
-### 🇺🇸 English Version
+#### ❤️ Spread the Word & Support Us
+Even if you don't have programming knowledge, you can contribute to the project in the following ways:
 
-This tool is built with the following key technologies and algorithms. We especially welcome refactoring and improvement suggestions from those familiar with these technologies!
+*   **Share it with others & Credit Recommendation:**
+    If you find AutoMap useful, **please consider sharing it on social media like X (formerly Twitter), in your company's chat, or on your blog.** Simply mentioning "I found this useful tool!" would be a great encouragement for us.
 
-| Category                    | Key Technologies & Libraries                                                     | Purpose                                                        |
-| --------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| **GUI Frontend**            | `Tkinter` (Python Standard Library)                                              | To create a lightweight, cross-platform GUI.                   |
-| **Image Processing & Opt.** | `OpenCV`, `NumPy`, `SciPy`                                                         | For advanced image processing and mathematical optimization.   |
-| &nbsp;&nbsp;↳ **Matching**  | Hybrid Method (`Template Matching` + `ORB Features`)                               | To accurately determine the relative positions between images. |
-| &nbsp;&nbsp;↳ **Optimization** | Global Optimization (`Sparse Least Squares`)                                     | To calculate the optimal layout that minimizes overall distortion (drift error). |
-| &nbsp;&nbsp;↳ **Memory Mgmt.** | Memory-mapped Files (`np.memmap`)                                                | To enable rendering of huge images that exceed RAM capacity.   |
-| **Automation**              | `PyAutoGUI`, `Keyboard`                                                            | For screen capturing, emulating keyboard inputs, and monitoring hotkeys. |
-| **CI/CD & Testing**         | `GitHub Actions` (`Flake8`, `Bandit`)                                              | To automate code quality checks and security scanning.         |
+    Furthermore, when you publish images created with this tool, **if it is possible**, we would be very grateful if you could add a credit notation. This is **not a requirement**, but it is a wonderful contribution to our community's growth.
 
+    > **Credit Examples:**
+    > *   `Map image created using AutoMap (https://github.com/your-username/AutoMap)`
+    > *   `Image created with AutoMap (GitHub Link)`
 
-#### 🇺🇸 English
+#### 💻 Contribute with Code
+Of course, contributions from developers are always welcome. Any contribution, no matter how small, is sincerely appreciated.
 
-This tool consists of two main, independent applications (a capturing app and a stitching app), each with a distinct role.
+*   **Code Refactoring:** Help us improve the AI-generated code to be cleaner and more efficient.
+*   **Bug Discovery and Fixes:** If you find a bug, reporting it via an Issue or sending a Pull Request would be a great help.
+*   **Feature Ideas and Implementation:** If you have an idea for a new feature, please propose it in an Issue.
+*   **Documentation Improvements:** Corrections to typos and grammatical errors in the `README` or user manual are also welcome.
+*   **Adding Tests:** To prevent unexpected issues, please help add unit tests and integration tests.
 
-1.  **Capturing App (`main_app.py`)**
-    *   **Role:** Provides the user interface and automates image collection by controlling the browser.
-    *   **Launch:** Executed directly via `python main_app.py`.
-    *   **GUI Construction:** Builds the main window (Capture tab, Stitch tab) using `Tkinter`. Window geometry and settings are saved to `config.json` (managed by `config_manager.py`).
-    *   **Automated Capture Process:**
-        1.  When the user clicks the "▶ Run" button, the automation logic starts in a separate thread (`threading`) to prevent the GUI from freezing.
-        2.  The `pyautogui` library is used to emulate arrow key presses a configured number of times, scrolling the browser view.
-        3.  A screenshot of the specified region is taken at each position and saved to the designated folder with the naming convention `Rxx_Cxx.png`.
-        4.  On Windows, power-saving features are temporarily suppressed via `ctypes` to prevent the PC from sleeping during long captures.
+---
 
-2.  **Stitching App (`stitcher_app.py` → `advanced_stitcher.py`)**
-    *   **Role:** Stitches the numerous captured images into a single, massive panoramic image.
-    *   **Launch:** Opened as a modal window from the "Join" tab of the capturing app.
-    *   **Process Separation:**
-        1.  `stitcher_app.py` is the `Tkinter` GUI for configuring stitching options.
-        2.  When "Start Stitching" is clicked, the computationally intensive image processing is executed in a completely separate process using `multiprocessing`, maintaining GUI responsiveness.
-    *   **Core Engine (`advanced_stitcher.py`):**
-        1.  **Pairwise Matching:** Utilizes `OpenCV` to calculate the relative offset between all adjacent image pairs using a hybrid approach of Template Matching and ORB feature detection.
-        2.  **Global Optimization:** Based on all offset data, it calculates the final coordinates for every image that minimize overall distortion. This is done in a single step using `scipy.sparse.linalg.lsqr`, preventing the accumulation of errors (drift).
-        3.  **Rendering:** Creates a large virtual canvas on disk using `numpy.memmap`. This allows the tool to render a final image that is significantly larger than the available RAM without causing memory errors.
+### 🛠️ Technical Specifications
+This tool is built with the following key technologies. For more details, please see the architecture documents in the `docs/` folder.
 
+| Category                    | Key Technologies & Libraries                               | Purpose                                                        |
+| --------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------- |
+| **GUI Frontend**            | `Tkinter`                                                  | To create a lightweight, cross-platform GUI.                   |
+| **Image Processing & Opt.** | `OpenCV`, `NumPy`, `SciPy`                                 | For advanced image processing and mathematical optimization.   |
+| &nbsp;&nbsp;↳ **Matching**  | Hybrid Method (`Template Matching` + `ORB Features`)       | To accurately determine the relative positions between images. |
+| &nbsp;&nbsp;↳ **Optimization** | Global Optimization (`Sparse Least Squares`)               | To calculate the optimal layout that minimizes overall distortion (drift error). |
+| **Automation**              | `PyAutoGUI`, `Keyboard`                                    | For screen capturing, emulating keyboard inputs, and monitoring hotkeys. |
+| **CI/CD & Testing**         | `GitHub Actions` (`Flake8`, `Bandit`)                      | To automate code quality checks and security scanning.         |
 
-###Usage
+---
 
-Please verify requirements.txt and run:
+### 📜 License
 
-code
-Bash
-download
-content_copy
-expand_less
-pip install -r requirements.txt
-python main_app.py
+This project is licensed under the **AGPLv3**.
+This license applies to the **use of the source code** and does **not restrict the use of the output (e.g., image files) generated by this software.**
 
+#### 【Simple Summary】
+*   ✅ **Using the Software:** You are completely **free to use this software for any purpose, including personal and commercial use.**
+*   ✅ **Using the Output:** You are **free to use the images created by this software for any purpose (including commercial use).**
+*   ❌ **Commercial embedding of the Source Code:** If you **incorporate the source code (or any part of it) into another software product that you distribute or sell**, you must also release the entire source code of your product under the AGPLv3.
 
-**This project needs your help.**
+A **Commercial License** is available for businesses and developers who wish to use this technology in a proprietary commercial product without being subject to the terms of the AGPL. Please contact the author for more information.
 
-As mentioned, this tool was born from a dialogue with an AI (ChatGPT). As I am not a programming expert myself, I find it difficult to conduct detailed reviews and improvements on the generated code.
+#### ❗ A Note on Map Copyrights
+The copyright of any map belongs to its respective creator. When using this software, you must check and comply with the terms of use for the map you are capturing. Maps from commercial entities like Google Maps may have usage restrictions.# AutoMap 🗺️
 
-However, I believe the idea and functionality of this tool have great potential. If you have programming knowledge and are even slightly interested in this project, I would be incredibly grateful for your contribution.
+**Web Map Auto-Scroller & Panorama Stitcher / Web地図自動スクロール撮影＆パノラマ結合ツール**
 
-Any contribution, no matter how small, is sincerely welcome.
+<!-- Badges -->
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-#### How can you help?
+<!-- Demo GIF -
+**重要:** `demo.gif` という名前のGIFファイルをリポジトリにアップロードし、以下のURLの `あなたのユーザー名` の部分を実際のユーザー名に書き換えてください。
+-->
+![AutoMap Demo](https://github.com/あなたのユーザー名/AutoMap/blob/main/demo.gif?raw=true)
 
-*   **Code Refactoring:**
-    The AI-generated code may have redundant or inefficient parts. Please help improve it to be cleaner, more readable, and more efficient.
+---
 
-*   **Bug Discovery and Fixes:**
-    If you find any strange behavior or errors while using the tool, please report them via an Issue. If you know how to fix it, a Pull Request would be greatly appreciated.
+## 🇯🇵 日本語 (Japanese)
 
-*   **Feature Ideas and Implementation:**
-    Do you have an idea for a feature that would make this tool even more useful? Proposing it in an Issue is a valuable contribution in itself.
+### 概要
+ブラウザ上の地図や巨大なコンテンツを自動でジグザグ移動しながらスクリーンショット撮影し、独自のアルゴリズムで継ぎ目のない一枚の巨大な画像に結合するツールです。
 
-*   **Documentation Improvements:**
-    Corrections to typos and grammatical errors in the `README` or user manual (`manual.html`), or suggestions for clearer wording, are also welcome.
+### 主な機能
+*   **🖱️ 自動撮影**: 範囲を指定し、矢印キー操作をエミュレートして地図などを自動スクロール撮影。
+*   **✨ 高度な結合**: テンプレートマッチングと特徴点マッチング(ORB)を併用し、ズレを自動補正。
+*   **💾 大規模対応**: ディスクキャッシュ(Memory-mapping)により、メモリ不足を防ぎ、巨大な画像の生成が可能。
 
-*   **Adding Tests:**
-    To prevent unexpected issues, please help add unit tests and integration tests.
+### 使い方
+1.  Python環境を構築します。
+2.  以下のコマンドを実行して、必要なライブラリをインストールします。
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  以下のコマンドでアプリケーションを起動します。
+    ```bash
+    python main_app.py
+    ```
+より詳細な使い方は、同梱の `manual.html` をご覧ください。
 
-This project is also an experiment to explore the potential of collaboration between AI and humans. Your skills and knowledge are the key to evolving this tool into something better.
+---
 
+### 🙏 貢献のお願い
 
-### License
-MIT License
+**このプロジェクトは、皆さんの様々な形での助けを必要としています。**
+
+#### ⚠️ 開発の背景
+このツールはAI（ChatGPT）との対話を通じて生まれました。私自身はプログラミングの専門家ではないため、コードの改善にはコミュニティの力が必要です。このプロジェクトは、AIと人間の協業がどのような可能性を秘めているかを探る実験的な試みでもあります。
+
+#### ❤️ ツールを広める・応援する
+プログラミングの知識がない方でも、以下の形でプロジェクトに貢献できます。
+
+*   **口コミでの紹介とクレジット表記のお願い:**
+    もしAutoMapが便利だと感じたら、ぜひ **X (旧Twitter) や社内のチャット、ブログなどで「こんな便利なツールがあったよ！」と紹介**していただけると、開発の大きな励みになります。
+
+    また、作成した画像を公開する際には、**もし可能であれば**、画像の隅やキャプション、引用元などに、以下のようなクレジット表記を加えていただけると、プロジェクトの知名度向上に繋がり、大変嬉しく思います。これは**義務ではありません**が、コミュニティの成長のための素晴らしいご協力となります。
+
+    > **クレジット表記の例:**
+    > *   `地図画像: AutoMap を使用して作成 (https://github.com/あなたのユーザー名/AutoMap)`
+    > *   `Image created with AutoMap (GitHub Link)`
+
+#### 💻 コードで貢献する
+もちろん、開発者からの貢献はいつでも大歓迎です。どんな小さな貢献でも、心から歓迎します。
+
+*   **コードのリファクタリング:** AIが生成したコードを、よりクリーンで効率的なものに改善する手助けをお願いします。
+*   **バグの発見と修正:** 不具合を見つけたら、Issueでの報告や、プルリクエストを送っていただけると大変助かります。
+*   **機能のアイデアと実装:** 「こんな機能があったらもっと便利になる」というアイデアを、ぜひIssueで提案してください。
+*   **ドキュメントの改善:** `README`や使い方マニュアルの誤字脱字の修正など、文章の改善も歓迎します。
+*   **テストの追加:** 予期せぬ不具合を防ぐため、ユニットテストや結合テストを追加する手助けをお願いします。
+
+---
+
+### 🛠️ 技術仕様
+このツールは、以下の主要な技術とアルゴリズムで構築されています。詳細については、`docs/`フォルダ内のアーキテクチャドキュメントをご覧ください。
+
+| カテゴリ                  | 主要技術・ライブラリ                                      | 目的                                                           |
+| ------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+| **GUIフロントエンド**     | `Tkinter`                                                 | クロスプラットフォームで動作する軽量なGUIの実現                    |
+| **画像処理・最適化**      | `OpenCV`, `NumPy`, `SciPy`                                | 高度な画像処理と数学的最適化の実行                             |
+| &nbsp;&nbsp;↳ **マッチング** | ハイブリッド方式 (`テンプレートマッチング` + `ORB特徴点`) | 画像間の正確な相対位置の特定                                   |
+| &nbsp;&nbsp;↳ **最適化**  | グローバル最適化 (`疎行列最小二乗法`)                     | 全体的な歪み（ドリフト誤差）を最小化する最適な配置の計算         |
+| **自動操作**              | `PyAutoGUI`, `Keyboard`                                   | スクリーンショット撮影、キーボード操作のエミュレート、ホットキー監視 |
+| **CI/CD・テスト**         | `GitHub Actions` (`Flake8`, `Bandit`)                     | コード品質の自動チェックとセキュリティスキャンの実行             |
+
+---
+
+### 📜 ライセンス (License)
+
+このプロジェクトは **AGPLv3** ライセンスの下で公開されています。
+このライセンスは**ソースコードの利用**に関するものであり、**本ソフトウェアを使用して生成された成果物（画像ファイルなど）の利用を制限するものではありません。**
+
+#### 【簡単なまとめ】
+*   ✅ **ソフトウェアの利用:** このソフトウェア自体は、個人・商用を問わず**完全に無料**で利用できます。
+*   ✅ **成果物の利用:** 本ソフトウェアを使って作成した画像（結合後の地図など）は、**自由に利用できます（商用利用も可）。**
+*   ❌ **ソースコードの商用組み込み:** このソフトウェアのソースコード（またはその一部）を、**あなたが開発した別のソフトウェアに組み込んで配布・販売する場合**は、あなたのソフトウェア全体のソースコードもAGPLv3で公開する必要があります。
+
+もし、AGPLのソースコードに関する制約を受けずに、あなたのクローズドソースな商用製品でAutoMapの技術を利用したい場合は、別途**商用ライセンス**をご用意しています。ご希望の場合は、作者までお問い合わせください。
+
+#### ❗ 地図の著作権に関する注意
+地図の著作権は各地図の制作者にあります。本ソフトウェアを使用する際は、対象となる地図の利用規約を必ず確認し、それに従ってください。Googleマップ等、企業の地図は利用が制限されている場合があります。
+
+<br>
+
+---
+---
+
+<br>
+
+## 🇺🇸 English
+
+### Overview
+AutoMap is a tool that automatically scrolls and captures screenshots of web maps (or any large content) in a zigzag pattern and stitches them into a single seamless panoramic image using advanced alignment algorithms.
+
+### Key Features
+*   **🖱️ Auto Capture**: Automatically scrolls and captures a specified region by emulating arrow key presses.
+*   **✨ Advanced Stitching**: Precisely aligns images using a hybrid method of Template Matching and ORB features.
+*   **💾 Large Scale Support**: Designed to handle very large images without running out of memory by using memory-mapping.
+
+### Usage
+1.  Set up a Python environment.
+2.  Install the required libraries by running the following command:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  Launch the application with the following command:
+    ```bash
+    python main_app.py
+    ```
+For more detailed instructions, please refer to the `manual.html` file included in this repository.
+
+---
+
+### 🙏 Call for Contributions
+
+**This project needs your help in many ways.**
+
+#### ⚠️ Background
+This tool was created through a dialogue with an AI (ChatGPT). As I am not a programming expert, the power of the community is essential for improving the code. This project is also an experiment to explore the potential of collaboration between AI and humans.
+
+#### ❤️ Spread the Word & Support Us
+Even if you don't have programming knowledge, you can contribute to the project in the following ways:
+
+*   **Share it with others & Credit Recommendation:**
+    If you find AutoMap useful, **please consider sharing it on social media like X (formerly Twitter), in your company's chat, or on your blog.** Simply mentioning "I found this useful tool!" would be a great encouragement for us.
+
+    Furthermore, when you publish images created with this tool, **if it is possible**, we would be very grateful if you could add a credit notation. This is **not a requirement**, but it is a wonderful contribution to our community's growth.
+
+    > **Credit Examples:**
+    > *   `Map image created using AutoMap (https://github.com/your-username/AutoMap)`
+    > *   `Image created with AutoMap (GitHub Link)`
+
+#### 💻 Contribute with Code
+Of course, contributions from developers are always welcome. Any contribution, no matter how small, is sincerely appreciated.
+
+*   **Code Refactoring:** Help us improve the AI-generated code to be cleaner and more efficient.
+*   **Bug Discovery and Fixes:** If you find a bug, reporting it via an Issue or sending a Pull Request would be a great help.
+*   **Feature Ideas and Implementation:** If you have an idea for a new feature, please propose it in an Issue.
+*   **Documentation Improvements:** Corrections to typos and grammatical errors in the `README` or user manual are also welcome.
+*   **Adding Tests:** To prevent unexpected issues, please help add unit tests and integration tests.
+
+---
+
+### 🛠️ Technical Specifications
+This tool is built with the following key technologies. For more details, please see the architecture documents in the `docs/` folder.
+
+| Category                    | Key Technologies & Libraries                               | Purpose                                                        |
+| --------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------- |
+| **GUI Frontend**            | `Tkinter`                                                  | To create a lightweight, cross-platform GUI.                   |
+| **Image Processing & Opt.** | `OpenCV`, `NumPy`, `SciPy`                                 | For advanced image processing and mathematical optimization.   |
+| &nbsp;&nbsp;↳ **Matching**  | Hybrid Method (`Template Matching` + `ORB Features`)       | To accurately determine the relative positions between images. |
+| &nbsp;&nbsp;↳ **Optimization** | Global Optimization (`Sparse Least Squares`)               | To calculate the optimal layout that minimizes overall distortion (drift error). |
+| **Automation**              | `PyAutoGUI`, `Keyboard`                                    | For screen capturing, emulating keyboard inputs, and monitoring hotkeys. |
+| **CI/CD & Testing**         | `GitHub Actions` (`Flake8`, `Bandit`)                      | To automate code quality checks and security scanning.         |
+
+---
+
+### 📜 License
+
+This project is licensed under the **AGPLv3**.
+This license applies to the **use of the source code** and does **not restrict the use of the output (e.g., image files) generated by this software.**
+
+#### 【Simple Summary】
+*   ✅ **Using the Software:** You are completely **free to use this software for any purpose, including personal and commercial use.**
+*   ✅ **Using the Output:** You are **free to use the images created by this software for any purpose (including commercial use).**
+*   ❌ **Commercial embedding of the Source Code:** If you **incorporate the source code (or any part of it) into another software product that you distribute or sell**, you must also release the entire source code of your product under the AGPLv3.
+
+A **Commercial License** is available for businesses and developers who wish to use this technology in a proprietary commercial product without being subject to the terms of the AGPL. Please contact the author for more information.
+
+#### ❗ A Note on Map Copyrights
+The copyright of any map belongs to its respective creator. When using this software, you must check and comply with the terms of use for the map you are capturing. Maps from commercial entities like Google Maps may have usage restrictions.
