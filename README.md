@@ -42,12 +42,40 @@ GoogleMAP等、企業作製の地図は利用が制限されている場合が�
 | **自動操作**              | `PyAutoGUI`, `Keyboard`                                                            | スクリーンショット撮影、キーボード操作のエミュレート、ホットキー監視 |
 | **CI/CD・テスト**         | `GitHub Actions` (`Flake8`, `Bandit`)                                              | コード品質の自動チェックとセキュリティスキャンの実行     
 
+
+### 処理フローの概要 / Processing Flow Overview
+
+このツールは、大きく分けて2つの独立したアプリケーション（撮影アプリと結合アプリ）で構成されており、それぞれが明確な役割を担っています。
+
+1.  **撮影アプリ (`main_app.py`)**
+    *   **役割:** ユーザーインターフェースの提供と、ブラウザの自動操作による画像収集。
+    *   **起動:** `python main_app.py` で直接実行します。
+    *   **GUI構築:** `Tkinter` を使用してメインウィンドウ（撮影タブ、結合タブ）を構築します。ウィンドウの位置や設定値は `config.json` に保存されます (`config_manager.py`)。
+    *   **自動撮影プロセス:**
+        1.  ユーザーが「▶ 開始」ボタンを押すと、GUIがフリーズしないように別スレッド (`threading`) で自動化ロジックが開始されます。
+        2.  `pyautogui` ライブラリを使用して、設定された回数だけ矢印キーをエミュレートし、ブラウザ画面をスクロールさせます。
+        3.  各位置で指定範囲のスクリーンショットを撮影し、`Rxx_Cxx.png` という命名規則で指定フォルダに保存します。
+        4.  Windows環境では、撮影中にPCがスリープするのを防ぐため、`ctypes` を介してOSの省電力機能を一時的に抑制します。
+
+2.  **結合アプリ (`stitcher_app.py` → `advanced_stitcher.py`)**
+    *   **役割:** 撮影された多数の画像を、一枚の巨大なパノラマ画像に結合する。
+    *   **起動:** 撮影アプリの「結合」タブからモーダルウィンドウとして起動されます。
+    *   **プロセス分離:**
+        1.  `stitcher_app.py` は結合設定を行うための `Tkinter` GUIです。
+        2.  「結合開始」が押されると、非常に重い画像処理を `multiprocessing` を使用して完全に別のプロセスで実行し、GUIの応答性を維持します。
+    *   **コアエンジン (`advanced_stitcher.py`):**
+        1.  **ペアワイズマッチング:** `OpenCV` を利用し、隣接する全画像ペアの相対的なズレ（オフセット）を計算します。テンプレートマッチングと特徴点マッチング（ORB）を併用するハイブリッド方式です。
+        2.  **グローバル最適化:** 全てのズレ情報を元に、`scipy.sparse.linalg.lsqr` を用いて、全体の歪みが最小になるような各画像の最終座標を一括で計算します。これにより、誤差の蓄積（ドリフト現象）を防ぎます。
+        3.  **レンダリング:** `numpy.memmap` を使ってディスク上に巨大な仮想キャンバスを作成します。これにより、PCの搭載RAM容量を大幅に超えるような巨大な画像でも、メモリ不足に陥ることなく最終的な一枚絵を生成できます。
+
+
 ### 使い方
 同梱の `manual.html` をご覧ください。
 または、Python環境を構築し、以下で起動します。
 
 
 pip install -r requirements.txt
+
 python main_app.py
 
 
@@ -126,6 +154,33 @@ This tool is built with the following key technologies and algorithms. We especi
 | &nbsp;&nbsp;↳ **Memory Mgmt.** | Memory-mapped Files (`np.memmap`)                                                | To enable rendering of huge images that exceed RAM capacity.   |
 | **Automation**              | `PyAutoGUI`, `Keyboard`                                                            | For screen capturing, emulating keyboard inputs, and monitoring hotkeys. |
 | **CI/CD & Testing**         | `GitHub Actions` (`Flake8`, `Bandit`)                                              | To automate code quality checks and security scanning.         |
+
+
+#### 🇺🇸 English
+
+This tool consists of two main, independent applications (a capturing app and a stitching app), each with a distinct role.
+
+1.  **Capturing App (`main_app.py`)**
+    *   **Role:** Provides the user interface and automates image collection by controlling the browser.
+    *   **Launch:** Executed directly via `python main_app.py`.
+    *   **GUI Construction:** Builds the main window (Capture tab, Stitch tab) using `Tkinter`. Window geometry and settings are saved to `config.json` (managed by `config_manager.py`).
+    *   **Automated Capture Process:**
+        1.  When the user clicks the "▶ Run" button, the automation logic starts in a separate thread (`threading`) to prevent the GUI from freezing.
+        2.  The `pyautogui` library is used to emulate arrow key presses a configured number of times, scrolling the browser view.
+        3.  A screenshot of the specified region is taken at each position and saved to the designated folder with the naming convention `Rxx_Cxx.png`.
+        4.  On Windows, power-saving features are temporarily suppressed via `ctypes` to prevent the PC from sleeping during long captures.
+
+2.  **Stitching App (`stitcher_app.py` → `advanced_stitcher.py`)**
+    *   **Role:** Stitches the numerous captured images into a single, massive panoramic image.
+    *   **Launch:** Opened as a modal window from the "Join" tab of the capturing app.
+    *   **Process Separation:**
+        1.  `stitcher_app.py` is the `Tkinter` GUI for configuring stitching options.
+        2.  When "Start Stitching" is clicked, the computationally intensive image processing is executed in a completely separate process using `multiprocessing`, maintaining GUI responsiveness.
+    *   **Core Engine (`advanced_stitcher.py`):**
+        1.  **Pairwise Matching:** Utilizes `OpenCV` to calculate the relative offset between all adjacent image pairs using a hybrid approach of Template Matching and ORB feature detection.
+        2.  **Global Optimization:** Based on all offset data, it calculates the final coordinates for every image that minimize overall distortion. This is done in a single step using `scipy.sparse.linalg.lsqr`, preventing the accumulation of errors (drift).
+        3.  **Rendering:** Creates a large virtual canvas on disk using `numpy.memmap`. This allows the tool to render a final image that is significantly larger than the available RAM without causing memory errors.
+
 
 ###Usage
 
