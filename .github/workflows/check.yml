@@ -38,7 +38,9 @@ jobs:
     - name: Security scan with Bandit
       run: |
         # Step 1: Run Bandit and save the report as a JSON file.
-        bandit -r . -f json -o bandit-report.json
+        # --exit-zero ensures that Bandit always exits with 0, even if issues are found.
+        # This allows our 'jq' script to handle the failure logic.
+        bandit -r . -f json -o bandit-report.json --exit-zero
         
         # Step 2: Print the report to the logs for easy viewing.
         echo "--- Bandit Scan Report ---"
