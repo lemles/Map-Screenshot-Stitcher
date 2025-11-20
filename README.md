@@ -40,6 +40,38 @@ python main_app.py
 MIT License
 
 
+## 🙏 貢献のお願い (Call for Contributions)
+
+### 🇯🇵 日本語 (Japanese)
+
+**このプロジェクトは、皆さんの助けを必要としています。**
+
+前述の通り、このツールはAI（ChatGPT）との対話を通じて生まれました。私自身はプログラミングの専門家ではないため、生成されたコードの詳細なレビューや改善が難しい状況です。
+
+しかし、このツールのアイデアと機能性には大きな可能性があると信じています。もしあなたがプログラミングの知識をお持ちで、このプロジェクトに少しでも興味を持っていただけたなら、ぜひ力を貸していただけないでしょうか。
+
+どのような小さな貢献でも、心から歓迎します。
+
+#### どんな助けが必要ですか？
+
+*   **コードのリファクタリング:**
+    AIが生成したコードには、冗長な部分や非効率的な箇所があるかもしれません。よりクリーンで、読みやすく、効率的なコードに改善する手助けをお願いします。
+
+*   **バグの発見と修正:**
+    ツールを使ってみて、おかしな挙動やエラーを見つけたら、ぜひIssueで報告してください。もし修正方法がわかるなら、プルリクエストを送っていただけると大変助かります。
+
+*   **機能のアイデアと実装:**
+    「こんな機能があったらもっと便利になる」というアイデアはありませんか？Issueで提案していただくだけでも貴重な貢献です。
+
+*   **ドキュメントの改善:**
+    `README`や使い方マニュアル（`manual.html`）の誤字脱字の修正、より分かりやすい表現への変更など、文章の改善も歓迎します。
+
+*   **テストの追加:**
+    予期せぬ不具合を防ぐため、ユニットテストや結合テストを追加する手助けをお願いします。
+
+このプロジェクトは、AIと人間の協業がどのような可能性を秘めているかを探る実験的な試みでもあります。あなたのスキルと知識が、このツールをより良いものへと成長させる鍵となります。
+
+
 
 ##🇺🇸 English
 
@@ -84,3 +116,29 @@ python main_app.py
 ###License
 MIT License
 
+**This project needs your help.**
+
+As mentioned, this tool was born from a dialogue with an AI (ChatGPT). As I am not a programming expert myself, I find it difficult to conduct detailed reviews and improvements on the generated code.
+
+However, I believe the idea and functionality of this tool have great potential. If you have programming knowledge and are even slightly interested in this project, I would be incredibly grateful for your contribution.
+
+Any contribution, no matter how small, is sincerely welcome.
+
+#### How can you help?
+
+*   **Code Refactoring:**
+    The AI-generated code may have redundant or inefficient parts. Please help improve it to be cleaner, more readable, and more efficient.
+
+*   **Bug Discovery and Fixes:**
+    If you find any strange behavior or errors while using the tool, please report them via an Issue. If you know how to fix it, a Pull Request would be greatly appreciated.
+
+*   **Feature Ideas and Implementation:**
+    Do you have an idea for a feature that would make this tool even more useful? Proposing it in an Issue is a valuable contribution in itself.
+
+*   **Documentation Improvements:**
+    Corrections to typos and grammatical errors in the `README` or user manual (`manual.html`), or suggestions for clearer wording, are also welcome.
+
+*   **Adding Tests:**
+    To prevent unexpected issues, please help add unit tests and integration tests.
+
+This project is also an experiment to explore the potential of collaboration between AI and humans. Your skills and knowledge are the key to evolving this tool into something better.
