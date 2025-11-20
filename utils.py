@@ -22,12 +22,4 @@ def open_folder_in_explorer(path):
 
 
 
-import subprocess
-import pickle
 
-def security_test_function(user_input):
-    # Bandit should detect this as a high-risk issue (shell=True)
-    subprocess.run(f"echo {user_input}", shell=True) 
-
-    # Bandit should detect this as a medium-risk issue (insecure pickle usage)
-    pickle.loads(b"\x80\x03}q\x00.")
