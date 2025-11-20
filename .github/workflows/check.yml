@@ -47,6 +47,7 @@ jobs:
     # Step 5: Scan for security vulnerabilities with Bandit
     - name: Security scan with Bandit
       run: |
+        pip install jq
         # Scan for vulnerabilities.
         # -r .: Recursively scan the current directory.
         # -lll: Report issues of HIGH severity.
