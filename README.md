@@ -6,10 +6,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-<!-- Demo GIF -
-**重要:** `demo.gif` という名前のGIFファイルをリポジトリにアップロードし、以下のURLの `あなたのユーザー名` の部分を実際のユーザー名に書き換えてください。
--->
-![AutoMap Demo](https://github.com/あなたのユーザー名/AutoMap/blob/main/demo.gif?raw=true)
+ ![](https://github.com/lemles/Map-Screenshot-Stitcher/blob/main/sample.gif)
 
 ---
 
