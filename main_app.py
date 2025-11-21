@@ -191,7 +191,7 @@ class Application(ttk.Frame):
 
     def setup_window(self):
         self.master.title("AutoMap")
-        geometry = self.config.get('window_geometry', "205x800+0+0")
+        geometry = self.config.get('window_geometry', "300x1200+0+0")
         self.master.geometry(geometry)
         self.master.attributes("-topmost", True)
 
@@ -451,7 +451,8 @@ class Application(ttk.Frame):
             print(f"Saved: {os.path.basename(filename)}")
             if not is_auto:
                 self.shot_col_count += 1
-                messagebox.showinfo(self.t('msg_done'), "OK")
+                messagebox.showinfo(self.t('msg_done'))
+                #messagebox.showinfo(self.t('msg_done'), "OK")
             return True 
         except Exception as e:
             print(f"Err: {e}")

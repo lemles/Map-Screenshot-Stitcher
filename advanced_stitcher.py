@@ -225,36 +225,54 @@ class AdvancedStitcher:
     
 
     def _match_features(self, base_img, target_img):
-        kp1, des1 = self.detector.detectAndCompute(base_img, None)
-        kp2, des2 = self.detector.detectAndCompute(target_img, None)
-        if des1 is None or des2 is None or len(des1) < 8 or len(des2) < 8:
-            return None, 0, 0
+            # 特徴点検出 (ここは変更なし)
+            kp1, des1 = self.detector.detectAndCompute(base_img, None)
+            kp2, des2 = self.detector.detectAndCompute(target_img, None)
+            if des1 is None or des2 is None or len(des1) < 8 or len(des2) < 8:
+                return None, 0, 0
 
-        knn_matches = self.matcher.knnMatch(des1, des2, k=2)
-        good_matches = []
-        for pair in knn_matches:
-            if len(pair) < 2:
-                continue
-            m, n = pair
-            if m.distance < 0.75 * n.distance:
-                good_matches.append(m)
+            # マッチング (ここは変更なし)
+            knn_matches = self.matcher.knnMatch(des1, des2, k=2)
+            good_matches = []
+            for pair in knn_matches:
+                if len(pair) < 2:
+                    continue
+                m, n = pair
+                # 誤検出を減らすため、判定を少し厳しくする (0.75 -> 0.7)
+                if m.distance < 0.7 * n.distance:
+                    good_matches.append(m)
 
-        match_count = len(good_matches)
-        if match_count < 8:
-            return None, 0, match_count
+            match_count = len(good_matches)
+            if match_count < 8:
+                return None, 0, match_count
 
-        src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
-        dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+            # 座標の抽出 (ここは変更なし)
+            src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches])
+            dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
 
-        # try default RANSAC then relax if necessary
-        for thr in (3.0, 6.0, 10.0):
-            M, mask = cv2.estimateAffinePartial2D(src_pts, dst_pts, method=cv2.RANSAC, ransacReprojThreshold=thr)
-            if M is not None and mask is not None and np.count_nonzero(mask) >= 6:
-                offset_x, offset_y = M[0, 2], M[1, 2]
-                score = np.count_nonzero(mask) / len(mask)
-                return (-int(round(offset_x)), -int(round(offset_y))), float(score), match_count
+            # ---【変更箇所】ここから平行移動限定ロジック---
+            
+            # 各マッチング点ごとの移動量 (dx, dy) を計算
+            diff = dst_pts - src_pts
+            
+            # 中央値 (Median) を採用して、外れ値（誤マッチ）の影響を排除する
+            # これにより、回転や拡大縮小を無視した「純粋なズレ」だけを取得できる
+            dx = np.median(diff[:, 0])
+            dy = np.median(diff[:, 1])
+            
+            # スコア計算（中央値に近い移動量を持つ点の割合）
+            # 許容誤差 2.0ピクセル以内
+            inliers = np.sum((np.abs(diff[:, 0] - dx) < 2.0) & (np.abs(diff[:, 1] - dy) < 2.0))
+            score = inliers / len(good_matches)
 
-        return None, 0, match_count
+            # スコアが低すぎる場合はマッチング失敗とみなす
+            # (以前のRANSACより厳密になるため、少し低めでもOKだが、信頼性重視で0.2程度)
+            if score < 0.15: 
+                return None, 0, match_count
+
+            # 結果を返す
+            # (targetをbaseに合わせるためのオフセットなので、符号を反転して返す)
+            return (-int(round(dx)), -int(round(dy))), float(score), match_count
 
     # ----------------------- pairwise calculation -----------------------
     def calculate_all_pairwise_matches(self):
