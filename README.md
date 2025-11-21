@@ -7,7 +7,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
  ![](https://github.com/lemles/Map-Screenshot-Stitcher/blob/main/sample.gif)
-国土交通省より
+（地理院地図 GSI Maps）
+
 ---
 
 ## 🇯🇵 日本語 (Japanese)
