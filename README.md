@@ -7,7 +7,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
  ![](https://github.com/lemles/Map-Screenshot-Stitcher/blob/main/sample.gif)
-
+国土交通省より
 ---
 
 ## 🇯🇵 日本語 (Japanese)
